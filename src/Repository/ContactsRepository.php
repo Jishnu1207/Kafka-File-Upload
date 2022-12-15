@@ -39,6 +39,11 @@ class ContactsRepository extends ServiceEntityRepository
         }
     }
 
+    public function insertion():void
+    {
+        
+    }
+
 //    /**
 //     * @return File[] Returns an array of File objects
 //     */

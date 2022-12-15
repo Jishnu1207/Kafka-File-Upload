@@ -35,7 +35,12 @@ class File
     /**
      * @ORM\Column(type="datetime", nullable=true)
      */
-    private $uploaded_time;
+    private $uploaded_at;
+
+    /**
+     * @ORM\Column(type="string", nullable=true)
+     */
+    private $mapping;
 
     public function getId(): ?int
     {
@@ -78,15 +83,27 @@ class File
         return $this;
     }
 
-    public function getUploadedTime(): ?\DateTimeInterface
+    public function getUploadedAt(): ?\DateTimeInterface
     {
-        return $this->uploaded_time;
+        return $this->uploaded_at;
     }
 
-    public function setUploadedTime(?\DateTimeInterface $uploaded_time): self
+    public function setUploadedAt(?\DateTimeInterface $uploaded_at): self
     {
-        $this->uploaded_time = $uploaded_time;
+        $this->uploaded_at = $uploaded_at;
 
         return $this;
     }
+    public function getMapping(): ?string
+    {
+        return $this->mapping;
+    }
+
+    public function setMapping(string $mapping): self
+    {
+        $this->mapping = $mapping;
+
+        return $this;
+    }
+
 }

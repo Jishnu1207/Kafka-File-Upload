@@ -39,6 +39,14 @@ class FileRepository extends ServiceEntityRepository
         }
     }
 
+    public function fetchMap($id)
+    {
+        $det=$this->findOneBy(['id'=>$id]);
+        $mapping=json_decode($det->getMapping());
+        return $mapping;
+    }
+    
+
 //    /**
 //     * @return File[] Returns an array of File objects
 //     */
