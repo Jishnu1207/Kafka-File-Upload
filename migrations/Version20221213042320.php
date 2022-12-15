@@ -20,7 +20,6 @@ final class Version20221213042320 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE contacts DROP FOREIGN KEY contacts_ibfk_1');
         $this->addSql('CREATE TABLE file (id INT AUTO_INCREMENT NOT NULL, file_name VARCHAR(30) NOT NULL, record_count INT NOT NULL, status SMALLINT NOT NULL, uploaded_time DATETIME DEFAULT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('DROP TABLE file_details');
         $this->addSql('DROP INDEX email ON contacts');

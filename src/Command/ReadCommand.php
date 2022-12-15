@@ -90,12 +90,11 @@ class ReadCommand extends Command
                             if($row)
                             {
                             $email=$row[$key];
-
                             if($this->mxValidation($email,$batch));
                             {
-                                foreach($row as $r)
+                            foreach($row as $r)
                                 {
-                                    $str2 .= $r . ",";
+                                    $str2 .=  "'".  $r ."'" . ",";
                                 }
                                     $str2=trim($str2,",");
     
@@ -103,7 +102,9 @@ class ReadCommand extends Command
                             }
                             }
                         }
-                        $str2=trim($str2,",(");
+                        $str2=trim($str2,",("); 
+                            
+                            print_r($str2);
                     }
                     else
                     {
@@ -141,9 +142,8 @@ class ReadCommand extends Command
         }
         else
         {
-            $val=false;
+            return false;
         }
-        return $val;
     }
     public function insertion($map)
     {
