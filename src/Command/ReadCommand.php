@@ -96,8 +96,15 @@ class ReadCommand extends Command
                             if($row)
                             { 
                             $email=$row[$key];
-                            if($this->mxValidation($email))
+                            $echeck=$repo2->checkMail($email);
+                            if($echeck)
                             {
+                                $skip++;
+                            }
+                            else
+                            {
+                            // if($this->mxValidation($email))
+                            // {
                                 $contacts=new Contacts();
 
                                 for( $i=0; $i<$len; $i++)
@@ -128,20 +135,21 @@ class ReadCommand extends Command
                                                 $contacts->setPhone($row[$i]);
                                                 break;
                                             default:
-                                                //do nothing
+                                                break;
                                         }
                                     }
                                 }
                                 $date=new \DateTime('now');
                                 $contacts->setCreatedDate($date);
-                                $this->$entityManager->persist($contacts);
+                                $this->entityManager->persist($contacts);
                                 $batch+=1;
                                 while($batch==3)
                                 {
                                     $batch=0;
-                                    $this->$entityManager->flush();
+                                    $this->entityManager->flush();
                                 }
-                            }
+                            // }
+                        }
                             }
                         }
                     }

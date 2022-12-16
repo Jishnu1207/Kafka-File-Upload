@@ -7,6 +7,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Persistence\ManagerRegistry;
 
+use function PHPUnit\Framework\isEmpty;
+
 /**
  * @extends ServiceEntityRepository<File>
  *
@@ -40,12 +42,21 @@ class ContactsRepository extends ServiceEntityRepository
         }
     }
 
-    public function insert($str2)
+    public function checkMail($email)
     {
-        $entityManager=$this->getDoctrine()->getManager();
-        $statement = $entityManager->getConnection()->prepare($str2);
-        $statement->execute();
+        $det=$this->findOneBy(['email'=>$email]);
+        if(!(isEmpty($det)))
+        {
+            $val=true;
+        }
+        else
+        {
+            $val=false;
+        }
+        return $val;
     }
+
+
 
 //    /**
 //     * @return File[] Returns an array of File objects
