@@ -16,6 +16,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\HttpKernel\KernelInterface;
 
+use function PHPSTORM_META\map;
+
 class ReadCommand extends Command
 {
     protected static $defaultName = 'Read';
@@ -37,7 +39,7 @@ class ReadCommand extends Command
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    protected function execute(InputInterface $input, OutputInterface $output)
     {
         $conf = new \RdKafka\Conf();
 
@@ -51,6 +53,10 @@ class ReadCommand extends Command
 
         $consumer->subscribe(['Kafka-File']);
 
+        $batch=0;
+
+        $skip=0;
+
         while (true) 
         {
             $message = $consumer->consume(5*1000);
@@ -61,15 +67,17 @@ class ReadCommand extends Command
 
                     $repo=$this->entityManager->getRepository(File::class);
 
-                    $obj=json_decode($message->payload);
+                    $repo2=$this->entityManager->getRepository(Contacts::class);
 
-                    $batch=0;
+                    $obj=json_decode($message->payload);
 
                     $id=$obj->id;
 
                     $fname=$obj->name;
 
                     $map=$repo->fetchMap($id);
+
+                    $len=sizeof($map);
 
                     $key=array_search('email',$map);
 
@@ -79,8 +87,6 @@ class ReadCommand extends Command
 
                     $finder->files()->in($this->projectDir.'/public/uploads/')->name($fname);
 
-                    $str2=$this->insertion($map);
-
                     if($finder->hasResults())
                     {
                         $file=fopen($path,'r');
@@ -88,27 +94,56 @@ class ReadCommand extends Command
                         {
                             $row=fgetcsv($file);
                             if($row)
-                            {
+                            { 
                             $email=$row[$key];
-                            if($this->mxValidation($email,$batch));
+                            if($this->mxValidation($email))
                             {
-                            foreach($row as $r)
+                                $contacts=new Contacts();
+
+                                for( $i=0; $i<$len; $i++)
                                 {
-                                    $str2 .=  "'".  $r ."'" . ",";
+                                    if($map[$i]!=null)
+                                    {
+                                        switch($map[$i])
+                                        {
+                                            case "first_name" :
+                                                $contacts->setFirstName($row[$i]);
+                                                break;
+                                            case "last_name" :
+                                                $contacts->setLastName($row[$i]);
+                                                break;
+                                            case "email" :
+                                                $contacts->setEmail($row[$i]);
+                                                break;
+                                            case "company_name" :
+                                                $contacts->setCompanyName($row[$i]);
+                                                break; 
+                                            case "city" :
+                                                $contacts->setCity($row[$i]);
+                                                break;  
+                                            case "zip" :
+                                                $contacts->setZip($row[$i]);
+                                                break; 
+                                            case "phone" :
+                                                $contacts->setPhone($row[$i]);
+                                                break;
+                                            default:
+                                                //do nothing
+                                        }
+                                    }
                                 }
-                                    $str2=trim($str2,",");
-    
-                                    $str2.="),(";
+                                $date=new \DateTime('now');
+                                $contacts->setCreatedDate($date);
+                                $this->$entityManager->persist($contacts);
+                                $batch+=1;
+                                while($batch==3)
+                                {
+                                    $batch=0;
+                                    $this->$entityManager->flush();
+                                }
                             }
                             }
                         }
-                        $str2=trim($str2,",("); 
-                            
-                            print_r($str2);
-                    }
-                    else
-                    {
-                        return false;;
                     }
 
                 case RD_KAFKA_RESP_ERR__PARTITION_EOF:
@@ -133,32 +168,20 @@ class ReadCommand extends Command
             }
         }
     }
-    public function mxValidation($email,$batch)
+    public function mxValidation($email)
     {
         if(checkdnsrr($email,'MX'))
         {
-            $batch++;
             $val=true;
         }
         else
         {
-            return false;
+            $val=false;
         }
+        return $val;
     }
-    public function insertion($map)
-    {
-        $str="INSERT INTO contacts(";
-
-        foreach($map as $m)
-        {   
-            $str .= $m . ",";
-        }
-        $str=trim($str,",");
-
-        $str.=") VALUES (";
-
-        print_r($str);
-    }
+    
+    
 }
 
 

@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Contacts;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -18,7 +19,7 @@ class ContactsRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, File::class);
+        parent::__construct($registry, Contacts::class);
     }
 
     public function add(Contacts $entity, bool $flush = false): void
@@ -39,9 +40,11 @@ class ContactsRepository extends ServiceEntityRepository
         }
     }
 
-    public function insertion():void
+    public function insert($str2)
     {
-        
+        $entityManager=$this->getDoctrine()->getManager();
+        $statement = $entityManager->getConnection()->prepare($str2);
+        $statement->execute();
     }
 
 //    /**

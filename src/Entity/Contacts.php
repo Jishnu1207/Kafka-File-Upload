@@ -6,7 +6,7 @@ use App\Repository\ContactsRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass=FileRepository::class)
+ * @ORM\Entity(repositoryClass=ContactsRepository::class)
  */
 class Contacts
 {
