@@ -96,7 +96,7 @@ class ReadCommand extends Command
                             if($row)
                             { 
                             $email=$row[$key];
-                            $echeck=$repo2->checkMail($email);
+                            $echeck=$repo2->checkMail($email,$row,$map);
                             if($echeck)
                             {
                                 $skip++;
@@ -109,7 +109,7 @@ class ReadCommand extends Command
 
                                 for( $i=0; $i<$len; $i++)
                                 {
-                                    if($map[$i]!=null)
+                                    if( (!empty($map[$i])) && (!empty($row[$i])))
                                     {
                                         switch($map[$i])
                                         {
@@ -141,14 +141,15 @@ class ReadCommand extends Command
                                 }
                                 $date=new \DateTime('now');
                                 $contacts->setCreatedDate($date);
+                                $contacts->setFileId($id);
                                 $this->entityManager->persist($contacts);
-                                $batch+=1;
-                                while($batch==3)
+                            // }
+                                $batch++;
+                                if($batch==3)
                                 {
                                     $batch=0;
                                     $this->entityManager->flush();
                                 }
-                            // }
                         }
                             }
                         }
