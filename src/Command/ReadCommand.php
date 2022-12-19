@@ -37,7 +37,7 @@ class ReadCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $consumer=$this->kafkaConfig();
+        $consumer = $this->kafkaConfig();
 
         while (true) 
         {
@@ -47,41 +47,37 @@ class ReadCommand extends Command
             {
                 case RD_KAFKA_RESP_ERR_NO_ERROR:
 
-                    $repo=$this->entityManager->getRepository(File::class);
+                    $repo = $this->entityManager->getRepository(File::class);
 
-                    $repo2=$this->entityManager->getRepository(Contacts::class);
+                    $repo2 = $this->entityManager->getRepository(Contacts::class);
 
-                    $obj=json_decode($message->payload);
+                    $obj = json_decode($message->payload);
 
-                    $id=$obj->id;
+                    $id = $obj->id;
 
-                    $fname=$obj->name;
+                    $fname = $obj->name;
 
-                    $map=$repo->fetchMap($id);
+                    $map = $repo->fetchMap($id);
 
-                    $len=sizeof($map);
+                    $key = array_search('email', $map);
 
-                    $key=array_search('email',$map);
+                    $finder=$this->fetchFile($fname);
 
-                    $path=$this->projectDir.'/public/uploads/'.$fname;
+                    $path = $this->projectDir.'/public/uploads/'.$fname;
 
-                    $finder= new Finder();
-
-                    $finder->files()->in($this->projectDir.'/public/uploads/')->name($fname);
-
-                    if($finder->hasResults())
+                    if ($finder->hasResults())
                     {
-                        $batch=0;
-                        $skip=0;
-                        $file=fopen($path,'r');
-                        while(!feof($file))
+                        $batch = 0;
+                        $skip = 0;
+                        $file = fopen($path, 'r');
+                        while (!feof($file))
                             {
-                                $row=fgetcsv($file);
-                                if($row)
+                                $row = fgetcsv($file);
+                                if ($row)
                                     { 
-                                        $email=$row[$key];
-                                        $echeck=$repo2->checkMail($email,$row,$map);
-                                        if($echeck)
+                                        $email = $row[$key];
+                                        $echeck = $repo2->checkMail($email,$row,$map);
+                                        if ($echeck)
                                             {
                                                 $skip++;
                                             }
@@ -89,56 +85,12 @@ class ReadCommand extends Command
                                             {
                                             // if($this->mxValidation($email))
                                             // {
-                                                $contacts=new Contacts();
-
-                                                for( $i=0; $i<$len; $i++)
-                                                    {
-                                                        if( (!empty($map[$i])) && (!empty($row[$i])))
-                                                            {
-                                                                switch($map[$i])
-                                                                    {
-                                                                        case "first_name" :
-                                                                            $contacts->setFirstName($row[$i]);
-                                                                            break;
-                                                                        case "last_name" :
-                                                                            $contacts->setLastName($row[$i]);
-                                                                            break;
-                                                                        case "email" :
-                                                                            $contacts->setEmail($row[$i]);
-                                                                            break;
-                                                                        case "company_name" :
-                                                                            $contacts->setCompanyName($row[$i]);
-                                                                            break; 
-                                                                        case "city" :
-                                                                            $contacts->setCity($row[$i]);
-                                                                            break;  
-                                                                        case "zip" :
-                                                                            $contacts->setZip($row[$i]);
-                                                                            break; 
-                                                                        case "phone" :
-                                                                            $contacts->setPhone($row[$i]);
-                                                                            break;
-                                                                        default:
-                                                                            break;
-                                                                    }
-                                                            }
-                                                    }
-                                                $date=new \DateTime('now');
-                                                $contacts->setCreatedDate($date);
-                                                $contacts->setFileId($id);
-                                                $this->entityManager->persist($contacts);
-                                                $batch++;
+                                                $batch=$this->dbInsertion($map, $row, $batch, $id);
                                             // }
-                                                
-                                                if($batch==3)
-                                                    {
-                                                        $batch=0;
-                                                        $this->entityManager->flush();
-                                                    }
-                                        }
+                                            }
                                     }
                             }
-                            if($batch!=0)
+                            if ($batch!=0)
                             {
                                 $this->entityManager->flush();
                             }
@@ -187,28 +139,74 @@ class ReadCommand extends Command
 
     public function mxValidation($email)
     {
-        if(checkdnsrr($email,'MX'))
+        if (checkdnsrr($email, 'MX'))
         {
-            $val=true;
+            $val = true;
         }
         else
         {
-            $val=false;
+            $val = false;
         }
         return $val;
     }
+
+    public function fetchFile($fname)
+    {
+        $finder = new Finder();
+
+        $finder->files()->in($this->projectDir.'/public/uploads/')->name($fname);
+        
+        return $finder;
+    }
     
-    
+    public function dbInsertion($map, $row, $batch, $id)
+    {
+        $len = sizeof($map);
+
+        $contacts = new Contacts();
+
+        for ($i = 0; $i < $len; $i++) 
+        {
+            if ((!empty($map[$i])) && (!empty($row[$i]))) 
+            {
+                switch ($map[$i]) 
+                {
+                    case "first_name":
+                        $contacts->setFirstName($row[$i]);
+                        break;
+                    case "last_name":
+                        $contacts->setLastName($row[$i]);
+                        break;
+                    case "email":
+                        $contacts->setEmail($row[$i]);
+                        break;
+                    case "company_name":
+                        $contacts->setCompanyName($row[$i]);
+                        break;
+                    case "city":
+                        $contacts->setCity($row[$i]);
+                        break;
+                    case "zip":
+                        $contacts->setZip($row[$i]);
+                        break;
+                    case "phone":
+                        $contacts->setPhone($row[$i]);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        $date = new \DateTime('now');
+        $contacts->setCreatedDate($date);
+        $contacts->setFileId($id);
+        $this->entityManager->persist($contacts);
+        $batch++;
+        if ($batch == 3)
+        {
+            $batch = 0;
+            $this->entityManager->flush();
+        }
+        return $batch;
+    }
 }
-
-
-
-
-// $contacts->setFirstName($fread[0]);
-            // $contacts->setLastName($fread[1]);
-            // $contacts->setEmail($fread[2]);
-            // $contacts->setCompanyName($fread[3]);
-            // $contacts->setCity($fread[4]);
-            // $contacts->setZip($fread[5]);
-            // $contacts->setPhone($fread[6]);
-            // $contacts->setCreatedDate($date);

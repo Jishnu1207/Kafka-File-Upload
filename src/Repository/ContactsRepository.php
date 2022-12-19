@@ -42,23 +42,23 @@ class ContactsRepository extends ServiceEntityRepository
         }
     }
 
-    public function checkMail($email,$row,$map)
+    public function checkMail($email, $row, $map)
     {
-        $det=$this->findOneBy(['email'=>$email]);
-        if(empty($det))
+        $det = $this->findOneBy(['email' => $email]);
+        if (empty($det))
         {
             $val=false;
         }
         else
         {
-            $size=sizeof($row);
-            $det=$this->findOneBy(['email'=>$email]);
-            $date=new \DateTime('now');
-            for( $i=0; $i<$size; $i++)
+            $size = sizeof($row);
+            $det = $this->findOneBy(['email' => $email]);
+            $date = new \DateTime('now');
+            for ($i = 0;$i < $size;$i++)
             {
-                if( (!empty($map[$i])) && (!empty($row[$i])))
+                if ( (!empty($map[$i])) && (!empty($row[$i])))
                     {
-                        switch($map[$i])
+                        switch ($map[$i])
                         {
                             case "first_name" :
                                 $det->setFirstName($row[$i]);
@@ -84,7 +84,7 @@ class ContactsRepository extends ServiceEntityRepository
                         }
                     }
             }
-            $val=true;
+            $val = true;
         }
         return $val;
     }

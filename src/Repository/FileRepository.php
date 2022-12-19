@@ -41,9 +41,9 @@ class FileRepository extends ServiceEntityRepository
 
     public function fetchMap($id)
     {
-        $det=$this->findOneBy(['id'=>$id]);
-        $mapping=json_decode($det->getMapping());
-        $date=new \DateTime('now');
+        $det = $this->findOneBy(['id' => $id]);
+        $mapping = json_decode($det->getMapping());
+        $date = new \DateTime('now');
         $det->setStatus(1);
         $det->setUploadedAt($date);
         $this->getEntityManager()->flush();
