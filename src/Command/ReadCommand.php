@@ -38,8 +38,6 @@ class ReadCommand extends Command
     {
         $consumer = $this->kafkaConfig();
 
-        print_r($consumer);
-
         while (true) 
         {
             $message = $consumer->consume(5*1000);
@@ -60,8 +58,10 @@ class ReadCommand extends Command
 
                     $map = $repo->fetchMap($id);
 
-                    $key = array_search('email', $map);
+                    $key = $this->fetchMail($map);
 
+                    if (!empty($key))
+                    {
                     $finder=$this->fetchFile($fname);
 
                     $path = $this->projectDir.'/public/uploads/'.$fname;
@@ -95,7 +95,17 @@ class ReadCommand extends Command
                             {
                                 $this->entityManager->flush();
                             }
+                            echo "CSV Data Inserted Successfully!!!";
                     }
+                    else
+                    {
+                        echo "File Not Found!!!";
+                    }
+                }
+                else
+                {
+                    echo "Email Field Not Found!!!\n";
+                }
 
                 case RD_KAFKA_RESP_ERR__PARTITION_EOF:
 
@@ -120,6 +130,8 @@ class ReadCommand extends Command
         }
     }
 
+
+
     public function kafkaConfig()
     {
         $conf = new \RdKafka\Conf();
@@ -138,18 +150,22 @@ class ReadCommand extends Command
 
     }
 
+
+
     public function mxValidation($email)
     {
         if (checkdnsrr($email, 'MX'))
         {
-            $val = true;
+            $mx = true;
         }
         else
         {
-            $val = false;
+            $mx = false;
         }
-        return $val;
+        return $mx;
     }
+
+
 
     public function fetchFile($fname)
     {
@@ -160,6 +176,8 @@ class ReadCommand extends Command
         return $finder;
     }
     
+
+
     public function dbInsertion($map, $row, $batch, $id): int
     {
         $len = sizeof($map);
@@ -199,15 +217,36 @@ class ReadCommand extends Command
             }
         }
         $date = new \DateTime('now');
+
         $contacts->setCreatedDate($date);
+
         $contacts->setFileId($id);
+
         $this->entityManager->persist($contacts);
+
         $batch++;
-        if ($batch == 3)
+
+        if ($batch == 500)
         {
             $batch = 0;
             $this->entityManager->flush();
         }
         return $batch;
+    }
+
+
+
+    public function fetchMail($map)
+    {
+        $key=array_search('email',$map);
+
+        if(!empty($key))
+        {
+            return $key;
+        }
+        else
+        {
+            return $key;
+        }
     }
 }

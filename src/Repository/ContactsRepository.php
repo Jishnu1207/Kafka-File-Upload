@@ -47,7 +47,7 @@ class ContactsRepository extends ServiceEntityRepository
         $det = $this->findOneBy(['email' => $email]);
         if (empty($det))
         {
-            $val=false;
+            $duplicate=false;
         }
         else
         {
@@ -114,9 +114,9 @@ class ContactsRepository extends ServiceEntityRepository
                         }
                     }
             }
-            $val = true;
+            $duplicate = true;
         }
-        return $val;
+        return $duplicate;
     }
 
 

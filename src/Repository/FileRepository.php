@@ -44,7 +44,7 @@ class FileRepository extends ServiceEntityRepository
         $det = $this->findOneBy(['id' => $id]);
         $mapping = json_decode($det->getMapping());
         $date = new \DateTime('now');
-        $det->setStatus(1);
+        $det->setStatus(2);
         $det->setUploadedAt($date);
         $this->getEntityManager()->flush();
         return $mapping;
