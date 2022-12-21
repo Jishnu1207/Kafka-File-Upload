@@ -61,25 +61,55 @@ class ContactsRepository extends ServiceEntityRepository
                         switch ($map[$i])
                         {
                             case "first_name" :
+                                while ( ($det->getFirstName()) != $row[$i] )
+                                {
                                 $det->setFirstName($row[$i]);
+
+                                $det->setModifiedDate($date);
+                                }
                                     break;
                             case "last_name" :
+                                while( ($det->getLastName()) != $row[$i] )
+                                {
                                 $det->setLastName($row[$i]);
+
+                                $det->setModifiedDate($date);
+                                }
                                     break;
                             case "company_name" :
+                                while(($det->getCompanyName()) != $row[$i])
+                                {
                                 $det->setCompanyName($row[$i]);
+                                
+                                $det->setModifiedDate($date);
+                                }
                                     break; 
                             case "city" :
+                                while(($det->getCity()) != $row[$i])
+                                {
                                 $det->setCity($row[$i]);
+
+                                $det->setModifiedDate($date);
+                                }
                                     break;  
                             case "zip" :
+                                while(($det->getZip()) != $row[$i])
+                                {
                                 $det->setZip($row[$i]);
+
+                                $det->setModifiedDate($date);
+                                }
                                     break; 
                             case "phone" :
+                                while(($det->getPhone()) != $row[$i])
+                                {
                                 $det->setPhone($row[$i]);
+
+                                $det->setModifiedDate($date);
+                                }
                                     break;
                             default:
-                            $det->setModifiedDate($date);
+                            //do nothing
                                 break;
                         }
                     }

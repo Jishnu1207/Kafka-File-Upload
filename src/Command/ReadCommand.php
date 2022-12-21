@@ -38,6 +38,8 @@ class ReadCommand extends Command
     {
         $consumer = $this->kafkaConfig();
 
+        print_r($consumer);
+
         while (true) 
         {
             $message = $consumer->consume(5*1000);
