@@ -42,6 +42,7 @@ class FileRepository extends ServiceEntityRepository
     public function fetchMap($id)
     {
         $det = $this->findOneBy(['id' => $id]);
+        print_r($det);
         $mapping = json_decode($det->getMapping());
         $date = new \DateTime('now');
         $det->setStatus(2);
@@ -49,6 +50,22 @@ class FileRepository extends ServiceEntityRepository
         $this->getEntityManager()->flush();
         return $mapping;
     }
+
+    public function fetchname($id)
+    {
+        $det=$this->findOneBy(['id'=>$id]);
+        $mapping=$det->getNewName();
+        return $mapping;
+    }
+
+    public function saveMap($id,$mapping)
+
+    {
+        $det = $this->findOneBy(['id' => $id]);
+        $det->setMapping($mapping);
+        $this->getEntityManager()->flush();
+    } 
+
     
 
 //    /**

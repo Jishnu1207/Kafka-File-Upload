@@ -42,6 +42,13 @@ class File
      */
     private $mapping;
 
+    /**
+     * @ORM\Column(type="string", length=50, nullable=true)
+     */
+    private $new_name;
+
+    // private $new_name;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -106,4 +113,15 @@ class File
         return $this;
     }
 
+    public function getNewName(): ?string
+    {
+        return $this->new_name;
+    }
+
+    public function setNewName(?string $new_name): self
+    {
+        $this->new_name = $new_name;
+
+        return $this;
+    }
 }
