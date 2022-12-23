@@ -66,7 +66,25 @@ class FileRepository extends ServiceEntityRepository
         $this->getEntityManager()->flush();
     } 
 
-    
+    public function findList($pageNo,$sortField,$sortOrder): array
+    {
+        $firstResult=($pageNo-1)*3;
+        return $this->createQueryBuilder('f')
+                ->select("f")
+                ->setMaxResults(3)
+                ->setFirstResult($firstResult)
+                ->orderBy('f.'.$sortField,$sortOrder)
+                ->getQuery()
+                ->getArrayResult();
+   }
+
+   public function recordCount(): ?int
+   {
+        return $this->createQueryBuilder('f')
+                ->select("count(f.id)")
+                ->getQuery()
+                ->getSingleScalarResult();   
+    }
 
 //    /**
 //     * @return File[] Returns an array of File objects

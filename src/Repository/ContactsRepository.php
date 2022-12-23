@@ -119,6 +119,31 @@ class ContactsRepository extends ServiceEntityRepository
         return $duplicate;
     }
 
+    public function findByFileId($fileId,$pageNo,$sortField,$sortOrder,$email): array
+   {
+        $firstResult=(($pageNo-1)*3);
+        return $this->createQueryBuilder('c')
+                ->andWhere('c.file_id = :val AND c.email LIKE :val2')
+                ->setParameter('val', $fileId)
+                ->setParameter('val2', '%'.$email.'%')
+                ->setFirstResult($firstResult)
+                ->setMaxResults(3)
+                ->orderBy('c.'.$sortField,$sortOrder)
+                ->getQuery()
+                ->getArrayResult()
+       ;
+   }
+
+   public function recordCount($fileId): ?int
+   {
+        return $this->createQueryBuilder('c')
+                ->select("count(c.id)")
+                ->andWhere('c.file_id=:val')
+                ->setParameter('val', $fileId)
+                ->getQuery()
+                ->getSingleScalarResult();   
+    }
+
 
 
 //    /**
