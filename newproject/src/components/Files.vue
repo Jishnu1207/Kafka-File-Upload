@@ -10,7 +10,7 @@
                 {{ row.index+1 }}
             </template>   -->
             <template #cell(uploaded_at) = "row">
-                {{ row.item.uploaded_at.date }}
+                {{ row.value?.date }}
             </template> 
             <template #cell(action) = "row">
                 <b-button @click = "$router.push({ path : '/contacts/'+row.item.id }) "> View </b-button>
@@ -41,7 +41,7 @@
                 sortOrder : 'DESC',
                 fields : [
                   // { key : 'SNo' },
-                  { key : 'file_name',sortable : true },
+                  { key : 'new_name',sortable : true },
                   { key : 'record_count' },
                   { key : 'uploaded_at',sortable : true },
                   { key : 'action' }
@@ -55,7 +55,7 @@
         {
             fileList(pageNo,sortField,sortOrder)
             { 
-                axios.post('https://127.0.0.1:8001/files',{ 'pageNo' : pageNo, 'sortField' : sortField, 'sortOrder' : sortOrder}) 
+                axios.post('http://127.0.0.1:8000/files',{ 'pageNo' : pageNo, 'sortField' : sortField, 'sortOrder' : sortOrder}) 
                     .then( response=> 
                     {
                         this.items = response.data.listData;
@@ -69,6 +69,7 @@
 
             callPagination()
             {
+                console.log("call pagination");
                 this.index = (this.currentPage-1) * 3 ;
                 this.fileList(this.currentPage , this.sortBy , this.sortOrder);
             },
@@ -93,9 +94,3 @@
         },
     }
 </script>
-/*  
-: sort-by = "sortBy"
-        : sort-desc = "sortOrder  =  =  'desc'"
-
-        console.log();
-*/

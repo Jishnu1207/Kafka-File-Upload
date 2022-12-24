@@ -26,7 +26,9 @@
             </template>   -->
             
             <template #cell(modified_date) = "row">
-                {{row.item.modified_date.date}}
+                <!-- {{row.item.modified_date.date}} -->
+                {{ row.value?.date }}
+
             </template> 
             
             <template #cell(action) = "row">
@@ -82,7 +84,7 @@
             fileList ( pageNo , sortField , sortOrder , searchText )
             {
                 let fileId = this.$route.params.file_id;
-                axios.post('https://127.0.0.1:8001/contacts',{'fileId' : fileId, 'pageNo' : pageNo, 'sortField' : sortField, 'sortOrder' : sortOrder, 'searchText' : searchText})
+                axios.post('http://127.0.0.1:8000/contacts',{'fileId' : fileId, 'pageNo' : pageNo, 'sortField' : sortField, 'sortOrder' : sortOrder, 'searchText' : searchText})
                     .then(response=> 
                     {
                         if(response.data.total != 0)
