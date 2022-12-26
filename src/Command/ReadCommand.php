@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use App\Class\Functions;
 use App\Entity\Contacts;
 use App\Entity\File;
 use Doctrine\ORM\EntityManagerInterface;
@@ -20,8 +21,9 @@ class ReadCommand extends Command
     protected static $defaultDescription = 'Read File Data and insert into table';
     private $entityManager;
 
-    public function __construct(EntityManagerInterface $entityManager,KernelInterface $kernel)
+    public function __construct(EntityManagerInterface $entityManager,KernelInterface $kernel,Functions $functions)
     {   
+        $this->functions = $functions;
         $this->entityManager = $entityManager;
         $this->projectDir = $kernel->getProjectDir();
 
@@ -36,7 +38,7 @@ class ReadCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $consumer = $this->kafkaConfig();
+        $consumer = $this->functions->kafkaConfig();
 
         while (true) 
         {
@@ -46,66 +48,7 @@ class ReadCommand extends Command
             {
                 case RD_KAFKA_RESP_ERR_NO_ERROR:
 
-                    $repo = $this->entityManager->getRepository(File::class);
-
-                    $repo2 = $this->entityManager->getRepository(Contacts::class);
-
-                    $obj = json_decode($message->payload);
-
-                    $id = $obj->id;
-
-                    $fname = $obj->name;
-
-                    $map = $repo->fetchMap($id);
-
-                    $key = $this->fetchMail($map);
-
-                    if (!empty($key))
-                    {
-                    $finder=$this->fetchFile($fname);
-
-                    $path = $this->projectDir.'/public/uploads/'.$fname;
-
-                    if ($finder->hasResults())
-                    {
-                        $batch = 0;
-                        $skip = 0;
-                        $file = fopen($path, 'r');
-                        while (!feof($file))
-                            {
-                                $row = fgetcsv($file);
-                                if ($row)
-                                    { 
-                                        $email = $row[$key];
-                                        $echeck = $repo2->checkMail($email,$row,$map);
-                                        if ($echeck)
-                                            {
-                                                $skip++;
-                                            }
-                                        else
-                                            {
-                                            // if($this->mxValidation($email))
-                                            // {
-                                                $batch=$this->dbInsertion($map, $row, $batch, $id);
-                                            // }
-                                            }
-                                    }
-                            }
-                            if ($batch!=0)
-                            {
-                                $this->entityManager->flush();
-                            }
-                            echo "CSV Data Inserted Successfully!!!";
-                    }
-                    else
-                    {
-                        echo "File Not Found!!!";
-                    }
-                }
-                else
-                {
-                    echo "Email Field Not Found!!!\n";
-                }
+                    $this->functions->mainOperation($message->payload, $this->projectDir);
 
                 case RD_KAFKA_RESP_ERR__PARTITION_EOF:
 
@@ -132,121 +75,121 @@ class ReadCommand extends Command
 
 
 
-    public function kafkaConfig()
-    {
-        $conf = new \RdKafka\Conf();
+    // public function kafkaConfig()
+    // {
+    //     $conf = new \RdKafka\Conf();
 
-        $conf->set('metadata.broker.list', '127.0.0.1');
+    //     $conf->set('metadata.broker.list', '127.0.0.1');
 
-        $conf->set('group.id', 'group1');
+    //     $conf->set('group.id', 'group1');
 
-        $conf->set('auto.offset.reset', 'earliest');
+    //     $conf->set('auto.offset.reset', 'earliest');
 
-        $consumer = new \RdKafka\KafkaConsumer($conf);
+    //     $consumer = new \RdKafka\KafkaConsumer($conf);
 
-        $consumer->subscribe(['Kafka-File']);
+    //     $consumer->subscribe(['Kafka-File']);
 
-        return $consumer;
+    //     return $consumer;
 
-    }
-
-
-
-    public function mxValidation($email)
-    {
-        if (checkdnsrr($email, 'MX'))
-        {
-            $mx = true;
-        }
-        else
-        {
-            $mx = false;
-        }
-        return $mx;
-    }
+    // }
 
 
 
-    public function fetchFile($fname)
-    {
-        $finder = new Finder();
+    // public function mxValidation($email)
+    // {
+    //     if (checkdnsrr($email, 'MX'))
+    //     {
+    //         $mx = true;
+    //     }
+    //     else
+    //     {
+    //         $mx = false;
+    //     }
+    //     return $mx;
+    // }
 
-        $finder->files()->in($this->projectDir.'/public/uploads/')->name($fname);
+
+
+    // public function fetchFile($fname)
+    // {
+    //     $finder = new Finder();
+
+    //     $finder->files()->in($this->projectDir.'/public/uploads/')->name($fname);
         
-        return $finder;
-    }
+    //     return $finder;
+    // }
     
 
 
-    public function dbInsertion($map, $row, $batch, $id): int
-    {
-        $len = sizeof($map);
+    // public function dbInsertion($map, $row, $batch, $id): int
+    // {
+    //     $len = sizeof($map);
 
-        $contacts = new Contacts();
+    //     $contacts = new Contacts();
 
-        for ($i = 0; $i < $len; $i++) 
-        {
-            if ((!empty($map[$i])) && (!empty($row[$i]))) 
-            {
-                switch ($map[$i]) 
-                {
-                    case "first_name":
-                        $contacts->setFirstName($row[$i]);
-                        break;
-                    case "last_name":
-                        $contacts->setLastName($row[$i]);
-                        break;
-                    case "email":
-                        $contacts->setEmail($row[$i]);
-                        break;
-                    case "company_name":
-                        $contacts->setCompanyName($row[$i]);
-                        break;
-                    case "city":
-                        $contacts->setCity($row[$i]);
-                        break;
-                    case "zip":
-                        $contacts->setZip($row[$i]);
-                        break;
-                    case "phone":
-                        $contacts->setPhone($row[$i]);
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-        $date = new \DateTime('now');
+    //     for ($i = 0; $i < $len; $i++) 
+    //     {
+    //         if ((!empty($map[$i])) && (!empty($row[$i]))) 
+    //         {
+    //             switch ($map[$i]) 
+    //             {
+    //                 case "first_name":
+    //                     $contacts->setFirstName($row[$i]);
+    //                     break;
+    //                 case "last_name":
+    //                     $contacts->setLastName($row[$i]);
+    //                     break;
+    //                 case "email":
+    //                     $contacts->setEmail($row[$i]);
+    //                     break;
+    //                 case "company_name":
+    //                     $contacts->setCompanyName($row[$i]);
+    //                     break;
+    //                 case "city":
+    //                     $contacts->setCity($row[$i]);
+    //                     break;
+    //                 case "zip":
+    //                     $contacts->setZip($row[$i]);
+    //                     break;
+    //                 case "phone":
+    //                     $contacts->setPhone($row[$i]);
+    //                     break;
+    //                 default:
+    //                     break;
+    //             }
+    //         }
+    //     }
+    //     $date = new \DateTime('now');
 
-        $contacts->setCreatedDate($date);
+    //     $contacts->setCreatedDate($date);
 
-        $contacts->setFileId($id);
+    //     $contacts->setFileId($id);
 
-        $this->entityManager->persist($contacts);
+    //     $this->entityManager->persist($contacts);
 
-        $batch++;
+    //     $batch++;
 
-        if ($batch == 500)
-        {
-            $batch = 0;
-            $this->entityManager->flush();
-        }
-        return $batch;
-    }
+    //     if ($batch == 500)
+    //     {
+    //         $batch = 0;
+    //         $this->entityManager->flush();
+    //     }
+    //     return $batch;
+    // }
 
 
 
-    public function fetchMail($map)
-    {
-        $key=array_search('email',$map);
+    // public function fetchMail($map)
+    // {
+    //     $key=array_search('email',$map);
 
-        if(!empty($key))
-        {
-            return $key;
-        }
-        else
-        {
-            return $key;
-        }
-    }
+    //     if(!empty($key))
+    //     {
+    //         return $key;
+    //     }
+    //     else
+    //     {
+    //         return $key;
+    //     }
+    // }
 }

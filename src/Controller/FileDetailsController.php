@@ -37,7 +37,7 @@ class FileDetailsController extends AbstractController
                     $date = new \DateTime('@'.strtotime('now'));
                     $destination = $this->getParameter('kernel.project_dir').'/public/uploads';
                     $upload_success = $UploadedFile->move($destination, $UploadedFile->getClientOriginalName().time());
-                    $rows = shell_exec("cat /home/vinuser/Documents/Kafka-File-Upload/public/uploads/$Original_Filename | wc -l");
+                    $rows = shell_exec("cat /home/jishnu/Desktop/Project/Kafka-File-Upload/public/uploads/$Original_Filename | wc -l");
                     $file = new File();
                     //$name =  $request->files->get('file')->getClientOriginalName().time();
                     $id = $file->getId();
